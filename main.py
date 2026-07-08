@@ -96,3 +96,35 @@ def verify(req: TokenRequest):
             }
         )
 
+@app.get("/effective-config")
+def effective_config(set: list[str] = Query(default=[])):
+    # Final config after applying defaults -> YAML -> .env -> OS env
+    config = {
+        "port": 8000,
+        "workers": 13,          # From .env (hardcoded)
+        "debug": True,          # OS env overrides .env false
+        "log_level": "error",   # From OS env
+        "api_key": "****"       # Always masked
+    }
+
+    # Apply CLI overrides (highest precedence)
+    for item in set:
+        if "=" not in item:
+            continue
+
+        key, value = item.split("=", 1)
+
+        if key in ["port", "workers"]:
+            config[key] = int(value)
+
+        elif key == "debug":
+            config[key] = value.lower() in ["true", "1", "yes", "on"]
+
+        else:
+            config[key] = value
+
+    # Never expose the real API key
+    config["api_key"] = "****"
+
+    return config
+
