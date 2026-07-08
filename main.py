@@ -64,6 +64,8 @@ AUDIENCE = "tds-66qufr8j.apps.exam.local"
 class TokenRequest(BaseModel):
     token: str
 
+from fastapi.responses import JSONResponse
+
 @app.post("/verify")
 def verify(req: TokenRequest):
     try:
@@ -77,13 +79,16 @@ def verify(req: TokenRequest):
 
         return {
             "valid": True,
-            "email": payload.get("email"),
-            "sub": payload.get("sub"),
-            "aud": payload.get("aud"),
+            "email": payload["email"],
+            "sub": payload["sub"],
+            "aud": payload["aud"],
         }
 
     except Exception:
-        raise HTTPException(
+        return JSONResponse(
             status_code=401,
-            detail={"valid": False}
+            content={
+                "valid": False
+            }
         )
+
