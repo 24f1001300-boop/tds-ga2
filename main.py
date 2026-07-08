@@ -136,20 +136,33 @@ async def stats(values: str = ""):
     }
 
 # --- Q2 ---
+from pydantic import BaseModel
+
+class TokenRequest(BaseModel):
+    token: str
 @app.post("/verify")
-async def verify_token(request: Request):
+async def verify_token(req: TokenRequest):
     try:
-        body = await request.json()
-        token = body.get("token")
-        claims = jwt.decode(token, config.PUBLIC_KEY_PEM.strip(), algorithms=["RS256"], issuer=config.ISSUER, audience=config.AUDIENCE)
+        claims = jwt.decode(
+            req.token,
+            config.PUBLIC_KEY_PEM.strip(),
+            algorithms=["RS256"],
+            issuer=config.ISSUER,
+            audience=config.AUDIENCE,
+        )
+
         return {
             "valid": True,
             "email": claims.get("email", ""),
             "sub": claims.get("sub", ""),
             "aud": claims.get("aud", "")
         }
-    except Exception as e:
-        return JSONResponse(status_code=401, content={"valid": False})
+
+    except Exception:
+        return JSONResponse(
+            status_code=401,
+            content={"valid": False}
+        )
 
 # --- Q3 ---
 @app.get("/effective-config")
