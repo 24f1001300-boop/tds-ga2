@@ -10,10 +10,11 @@ from fastapi import Query
 app = FastAPI()
 
 # Allow ONLY the assigned origin
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://dash-n1moaf.example.com"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
